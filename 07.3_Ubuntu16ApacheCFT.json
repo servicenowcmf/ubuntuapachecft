@@ -1,0 +1,71 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "AWS Ubuntu 16 LTS w Apache v2",
+    
+    "Parameters" : {
+        "AWSInstanceName": {
+        "Description" : "Enter the name of your Instance",
+        "Type": "String",
+        "MinLength": "3",
+        "MaxLength": "30"
+        },
+        "MyKeyName" : {
+        "Description" : "Please enter or select the SSH key you created to connect to Linux Instances ",
+        "Type" : "String",
+        "Default" : "StudentLabKey"
+        },
+        "MySecurityGroup" : {
+        "Description" : "Please enter the name of your Security Group",
+        "Type" : "String",
+        "Default" : "sg-cf7680bd"
+        },
+        "PublicSubnet" : {
+        "Description" : "Please enter the details for the subnet the instance will be launched in",
+        "Type" : "String",
+        "Default" : "subnet-a69eb38b"
+        }
+        
+        
+    },
+    
+    
+    
+    "Resources": {
+        "MyEC2Instance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "ImageId": "ami-0f9cf087c1f27d9b1",
+                "InstanceType": "t1.micro",
+                "KeyName" : { "Ref" : "MyKeyName" },
+                "NetworkInterfaces": [ {
+                "AssociatePublicIpAddress": "true",
+                "DeviceIndex": "0",
+                "GroupSet": [{ "Ref" : "MySecurityGroup" }],
+                "SubnetId": { "Ref" : "PublicSubnet" }} ],
+                "Tags" : [{ "Key" : "Name", "Value" : {"Ref" : "AWSInstanceName"}}],
+                "UserData" : {
+                    "Fn::Base64" : {"Fn::Join" : ["", [
+                        "#!/bin/bash\n",
+                        "#install Apache Web Server on Ubuntu 16 LTS",
+                        "#update repositories on server",
+                        "apt-get -y update",
+                        "#install git",
+                        "apt-get -y install git-core \n",
+                        "#install apache webserver",
+                        "apt-get -y install apache2 \n",
+                        "#download webserver html file from git repository",
+                        "git clone https://github.com/servicenowcmf/website \n",
+                        "sleep 5s",
+                        "#copy the downloaded content to the Apache www directory",
+                        "cp -a /home/ubuntu/website/. /var/www/html/ \n",
+                        "#change the folder to the webserver directory",
+                        "cd /var/www/html \n", 
+                        "#restart the webserver",
+                        "systemctl start apache2.service \n"
+                        ] ] }}
+            }
+            
+        }
+    }
+
+}
