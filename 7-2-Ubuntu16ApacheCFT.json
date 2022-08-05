@@ -1,0 +1,60 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "AWS Ubuntu 22 LTS w Apache v2.na",
+    
+    "Parameters" : {
+        "AWSInstanceName": {
+        "Description" : "Enter the name of your Instance",
+        "Type": "String",
+        "MinLength": "3",
+        "MaxLength": "30"
+        },
+        "MyKeyName" : {
+        "Description" : "Please enter or select the SSH key you created to connect to Linux Instances ",
+        "Type" : "String",
+        "Default" : "StudentLabKey"
+        },
+        "MySecurityGroup" : {
+        "Description" : "Please enter the name of your Security Group",
+        "Type" : "String",
+        "Default" : "sg-07735b313d7bfce3b"
+        },
+        "PublicSubnet" : {
+        "Description" : "Please enter the details for the subnet the instance will be launched in",
+        "Type" : "String",
+        "Default" : "subnet-0dcbcb658d6b5480e"
+        }
+        
+        
+    },
+    
+    
+    
+    "Resources": {
+        "MyEC2Instance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "ImageId": "ami-052efd3df9dad4825",
+                "InstanceType": "t1.micro",
+                "KeyName" : { "Ref" : "MyKeyName" },
+                "NetworkInterfaces": [ {
+                "AssociatePublicIpAddress": "true",
+                "DeviceIndex": "0",
+                "GroupSet": [{ "Ref" : "MySecurityGroup" }],
+                "SubnetId": { "Ref" : "PublicSubnet" }} ],
+                "Tags" : [{ "Key" : "Name", "Value" : {"Ref" : "AWSInstanceName"}}],
+                "UserData" : {
+                    "Fn::Base64" : {"Fn::Join" : ["", [
+                        "#!/bin/bash \n",
+                        "#install Apache Web Server on Ubuntu 16 LTS",
+                        "#update repositories on server",
+                        "sudo apt-get -y update \n",
+                        "sudo apt-get install -y wget \n",
+                        "sudo wget -O - https://raw.githubusercontent.com/servicenowcmf/shellscripts/master/installwebsite.sh | bash"
+                        ] ] }}
+            }
+            
+        }
+    }
+
+}
